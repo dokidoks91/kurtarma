@@ -3515,27 +3515,39 @@ BACK Ürünler:
         # Havuza eklenen tercihli ürünler (kriterlere uygun olsun ya da olmasın)
         try:
             preferred_in_pool_list = []
+            excluded_from_pool_list = []
             for entry in preferred_entries:
-                if not entry.get('in_pool', False):
-                    continue
                 try:
                     kisakodrenk_var = entry.get('kisakodrenk')
                     if kisakodrenk_var and hasattr(kisakodrenk_var, 'get'):
                         kisakodrenk = kisakodrenk_var.get().strip().upper()
                     else:
                         kisakodrenk = str(entry.get('kisakodrenk', '')).strip().upper()
-                    if kisakodrenk:
+                    
+                    if not kisakodrenk:
+                        continue
+                    
+                    # Check if product is in pool or explicitly excluded
+                    in_pool = entry.get('in_pool', False)
+                    if in_pool:
                         preferred_in_pool_list.append(kisakodrenk)
+                    else:
+                        # Only add to exclusion list if user has explicitly interacted with this product
+                        # (i.e., it has a kisakodrenk value entered)
+                        excluded_from_pool_list.append(kisakodrenk)
                 except Exception as e:
                     print(f"WARNING: Error processing preferred entry for in_pool: {e}")
                     continue
             config.preferred_products_in_pool = preferred_in_pool_list
+            config.excluded_first_products_from_pool = excluded_from_pool_list
             print(f"DEBUG: collect_config - preferred_products_in_pool: {config.preferred_products_in_pool}")
+            print(f"DEBUG: collect_config - excluded_first_products_from_pool: {config.excluded_first_products_from_pool}")
         except Exception as e:
             print(f"WARNING: Error processing preferred_products_in_pool: {e}")
             import traceback
             traceback.print_exc()
             config.preferred_products_in_pool = []
+            config.excluded_first_products_from_pool = []
         
         # Eski forced_preferred_products için backward compatibility (artık kullanılmıyor)
         try:

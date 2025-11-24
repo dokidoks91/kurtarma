@@ -1006,6 +1006,20 @@ def filter_first_products(unique_products: pd.DataFrame, cfg: dict) -> pd.DataFr
         filtered = combined_products
         print(f"DEBUG: {len(actual_preferred_products)} tercihli ürün havuza eklendi. Havuz boyutu: {before_count} -> {after_count}")
     
+    # Apply exclusion list - remove products that user explicitly excluded from pool
+    excluded_from_pool = cfg.get("excluded_first_products_from_pool", [])
+    if excluded_from_pool:
+        excluded_kisakodrenks = {p.upper().strip() for p in excluded_from_pool if p and str(p).strip()}
+        print(f"DEBUG: excluded_first_products_from_pool: {excluded_from_pool}")
+        print(f"DEBUG: excluded_kisakodrenks (normalized): {excluded_kisakodrenks}")
+        
+        before_exclusion = len(filtered)
+        filtered = filtered[~filtered["kisakodrenk"].str.upper().str.strip().isin(excluded_kisakodrenks)]
+        after_exclusion = len(filtered)
+        
+        if before_exclusion > after_exclusion:
+            print(f"DEBUG: {before_exclusion - after_exclusion} ürün havuzdan çıkarıldı (kullanıcı talebi). Havuz boyutu: {before_exclusion} -> {after_exclusion}")
+    
     print(f"Toplam FIRST adayı (gelişmiş kısıtlar uygulandıktan sonra): {len(filtered)}")
     return filtered
 

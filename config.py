@@ -86,6 +86,7 @@ class PlanConfig:
     # Preferred products
     preferred_first_products: List[PreferredFirstProduct] = field(default_factory=list)
     preferred_products_in_pool: List[str] = field(default_factory=list)
+    excluded_first_products_from_pool: List[str] = field(default_factory=list)
     forced_preferred_products: List[str] = field(default_factory=list)
     
     # Posting times (from DEFAULT_CFG)
@@ -198,6 +199,7 @@ class PlanConfig:
             "prioritize_by_stock": self.prioritize_by_stock,
             "preferred_first_products": [p.to_dict() for p in self.preferred_first_products],
             "preferred_products_in_pool": self.preferred_products_in_pool,
+            "excluded_first_products_from_pool": self.excluded_first_products_from_pool,
             "forced_preferred_products": self.forced_preferred_products,
             "weekday_times": self.weekday_times,
             "weekend_times": self.weekend_times,
@@ -277,6 +279,7 @@ class PlanConfig:
             prioritize_by_stock=d.get("prioritize_by_stock", False),
             preferred_first_products=preferred,
             preferred_products_in_pool=d.get("preferred_products_in_pool", []),
+            excluded_first_products_from_pool=d.get("excluded_first_products_from_pool", []),
             forced_preferred_products=d.get("forced_preferred_products", []),
             weekday_times=d.get("weekday_times", [
                 "09:00", "10:30", "11:30", "12:30", "13:30", "14:30",
