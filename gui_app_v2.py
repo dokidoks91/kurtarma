@@ -227,8 +227,12 @@ class ScrollableFrame(ttk.Frame):
 class PlannerGUI:
     def __init__(self, root):
         self.root = root
-        self.root.title("Instagram Post Planner - Comprehensive Configuration")
+        self.root.title("Instagram Post Planner - Tercihli Fix v2 (15b65ee)")
         self.root.geometry("900x700")
+        print("=" * 80)
+        print("DEBUG: Instagram Post Planner - Tercihli Fix v2 (commit 15b65ee)")
+        print("DEBUG: Bu versiyonda havuz otomatik hesaplanmaz - 'Havuz Hesapla' butonuna basmalısınız")
+        print("=" * 80)
         self.root.resizable(True, True)
         
         self.config = create_default_config()
@@ -1971,8 +1975,9 @@ class PlannerGUI:
         
         # Havuz boyutunu güncelleme - kullanıcı "Havuz Hesapla" butonuna basınca güncellenecek
         new_in_pool = entry.get('in_pool', False)
-        print(f"DEBUG: toggle_preferred_product_in_pool - Yeni in_pool değeri: {new_in_pool}")
-        print(f"DEBUG: toggle_preferred_product_in_pool - Havuz boyutu otomatik güncellenmeyecek - kullanıcı 'Havuz Hesapla' butonuna basmalı")
+        print(f"DEBUG: [v2-15b65ee] toggle_preferred_product_in_pool - Yeni in_pool değeri: {new_in_pool}")
+        print(f"DEBUG: [v2-15b65ee] Havuz boyutu otomatik güncellenmeyecek - kullanıcı 'Havuz Hesapla' butonuna basmalı")
+        print(f"DEBUG: [v2-15b65ee] update_all_pool_sizes() ÇAĞRILMIYOR - bu yeni versiyonun özelliği")
     
     def check_daily_constraints(self):
         """Check if daily constraints are feasible for placement (kept for backward compatibility)"""
