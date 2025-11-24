@@ -1969,18 +1969,10 @@ class PlannerGUI:
                 pool_button.config(text="Havuzdan Çıkar")
                 pool_button.grid()
         
-        # Havuz boyutunu güncelle (tercihli ürünler havuz boyutunu etkileyebilir)
+        # Havuz boyutunu güncelleme - kullanıcı "Havuz Hesapla" butonuna basınca güncellenecek
         new_in_pool = entry.get('in_pool', False)
         print(f"DEBUG: toggle_preferred_product_in_pool - Yeni in_pool değeri: {new_in_pool}")
-        
-        if self.raw_df is not None and not self.raw_df.empty:
-            # Havuz boyutunu yeniden hesapla
-            print(f"DEBUG: toggle_preferred_product_in_pool - Havuz boyutu güncelleniyor (kisakodrenk: {kisakodrenk}, in_pool: {new_in_pool})")
-            # Verify that the entry's in_pool value is correctly set
-            print(f"DEBUG: toggle_preferred_product_in_pool - Entry in_pool value after toggle: {entry.get('in_pool', False)}")
-            self.update_all_pool_sizes(immediate=True)
-        else:
-            print(f"DEBUG: toggle_preferred_product_in_pool - raw_df is None or empty, havuz boyutu güncellenemiyor")
+        print(f"DEBUG: toggle_preferred_product_in_pool - Havuz boyutu otomatik güncellenmeyecek - kullanıcı 'Havuz Hesapla' butonuna basmalı")
     
     def check_daily_constraints(self):
         """Check if daily constraints are feasible for placement (kept for backward compatibility)"""
@@ -2496,10 +2488,18 @@ Gerekli BACK Ürün Sayısı: {required_back}"""
                     # Debug: Check if preferred_products_in_pool is in cfg
                     if "preferred_products_in_pool" not in cfg:
                         cfg["preferred_products_in_pool"] = []
+                    if "excluded_first_products_from_pool" not in cfg:
+                        cfg["excluded_first_products_from_pool"] = []
+                    
                     preferred_count = len(cfg.get('preferred_products_in_pool', []))
                     preferred_list = cfg.get('preferred_products_in_pool', [])
-                    print(f"DEBUG: collect_config() successful, preferred_products_in_pool count: {preferred_count}")
-                    print(f"DEBUG: preferred_products_in_pool list: {preferred_list}")
+                    excluded_count = len(cfg.get('excluded_first_products_from_pool', []))
+                    excluded_list = cfg.get('excluded_first_products_from_pool', [])
+                    
+                    print(f"DEBUG: collect_config() successful")
+                    print(f"DEBUG: preferred_products_in_pool count: {preferred_count}, list: {preferred_list}")
+                    print(f"DEBUG: excluded_first_products_from_pool count: {excluded_count}, list: {excluded_list}")
+                    
                     # Debug: Check preferred_entries directly
                     preferred_entries = getattr(self, "preferred_entries", [])
                     in_pool_count = sum(1 for entry in preferred_entries if entry.get('in_pool', False))
@@ -3527,21 +3527,29 @@ BACK Ürünler:
                     if not kisakodrenk:
                         continue
                     
+                    # Check status label to determine if user explicitly excluded this product
+                    status_label = entry.get('status_label')
+                    status_text = status_label.cget('text') if status_label else ""
+                    
                     # Check if product is in pool or explicitly excluded
                     in_pool = entry.get('in_pool', False)
                     if in_pool:
                         preferred_in_pool_list.append(kisakodrenk)
-                    else:
-                        # Only add to exclusion list if user has explicitly interacted with this product
-                        # (i.e., it has a kisakodrenk value entered)
+                        print(f"DEBUG: collect_config - Adding to pool: {kisakodrenk} (in_pool=True, status='{status_text}')")
+                    elif "Havuzdan çıkarıldı" in status_text or "çıkarıldı" in status_text.lower():
+                        # Only add to exclusion list if user explicitly clicked "Havuzdan Çıkar"
                         excluded_from_pool_list.append(kisakodrenk)
+                        print(f"DEBUG: collect_config - Excluding from pool: {kisakodrenk} (status='{status_text}')")
+                    else:
+                        # Product has a kisakodrenk but user hasn't toggled it - let normal filters decide
+                        print(f"DEBUG: collect_config - Skipping (no explicit action): {kisakodrenk} (in_pool={in_pool}, status='{status_text}')")
                 except Exception as e:
                     print(f"WARNING: Error processing preferred entry for in_pool: {e}")
                     continue
             config.preferred_products_in_pool = preferred_in_pool_list
             config.excluded_first_products_from_pool = excluded_from_pool_list
-            print(f"DEBUG: collect_config - preferred_products_in_pool: {config.preferred_products_in_pool}")
-            print(f"DEBUG: collect_config - excluded_first_products_from_pool: {config.excluded_first_products_from_pool}")
+            print(f"DEBUG: collect_config - FINAL preferred_products_in_pool ({len(preferred_in_pool_list)}): {config.preferred_products_in_pool}")
+            print(f"DEBUG: collect_config - FINAL excluded_first_products_from_pool ({len(excluded_from_pool_list)}): {config.excluded_first_products_from_pool}")
         except Exception as e:
             print(f"WARNING: Error processing preferred_products_in_pool: {e}")
             import traceback
